@@ -7,6 +7,7 @@ from .serializers import FilmSerializer, FilmGenreSerializer, FilmUserSerializer
 from django_filters.rest_framework import DjangoFilterBackend   # new
 from rest_framework.pagination import PageNumberPagination  # new
 from rest_framework.response import Response  # new
+from rest_framework import (viewsets, filters, status, views, authentication, permissions) # updated
 
 
 
@@ -54,7 +55,7 @@ class FilmViewSet(viewsets.ReadOnlyModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
 
     search_fields = ['title', 'year', 'genres__name']
-    ordering_fields = ['title', 'year'] # new
+    ordering_fields = ['title', 'year', 'genres__name', 'favorites', 'average_note'] # new
 
     filterset_fields = {
     'year': ['lte', 'gte'],  # Año menor o igual, mayor o igual que
@@ -66,7 +67,9 @@ class FilmViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class FilmUserViewSet(views.APIView):
-    
+    authentication_classes = [authentication.SessionAuthentication]  # new
+    permission_classes = [permissions.IsAuthenticated]  # new
+
     # El método GET devolverá las peliculas del usuario
     def get(self, request, *args, **kwargs):
         queryset = FilmUser.objects.filter(user=self.request.user)
