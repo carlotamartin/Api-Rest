@@ -5,9 +5,28 @@ class UserSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(required=True)
     username = serializers.CharField(required=True)
     password = serializers.CharField(min_length=8)
+    avatar = serializers.ImageField(required=False, allow_null=True)
     class Meta:
         model = get_user_model()
-        fields = ('email', 'username', 'password')
+        fields = ('email', 'username', 'password', 'avatar')
 
     def validate_password(self, value):
-        return make_password(value)
+            return make_password(value)
+
+    def validate_username(self, value):
+        value = value.replace(" ", "")  # Ya que estamos borramos los espacios
+        try:
+            user = get_user_model().objects.get(username=value)
+            # Si es el mismo usuario mandando su mismo username le dejamos
+            if user == self.instance:
+                return value
+        except get_user_model().DoesNotExist:
+            return value
+        raise serializers.ValidationError("Nombre de usuario en uso")
+
+
+
+    def update(self, instance, validated_data):
+        validated_data.pop('email', None)               # prevenimos el borrado
+        return super().update(instance, validated_data)  # seguimos la ejecución
+
