@@ -23,7 +23,14 @@ class UserSerializer(serializers.ModelSerializer):
         except get_user_model().DoesNotExist:
             return value
         raise serializers.ValidationError("Nombre de usuario en uso")
-
+    def validate_email(self, value):
+        # Hay un usuario con este email ya registrado?
+        try:
+            user = get_user_model().objects.get(email=value)
+        except get_user_model().DoesNotExist:
+            return value
+        # En cualquier otro caso la validación fallará
+        raise serializers.ValidationError("Email en uso")
 
 
     def update(self, instance, validated_data):

@@ -4,6 +4,12 @@ from django.db import models
 import uuid
 from django.db import models
 from django.utils.text import slugify
+
+
+from django.conf import settings  # new
+from django.core.validators import MaxValueValidator  # new
+
+
 class Film(models.Model):
 
     def path_to_film(self, instance, filename):
@@ -40,3 +46,31 @@ class FilmGenre(models.Model):
         def save(self, *args, **kwargs):
             self.slug = slugify(self.name)
             super(FilmGenre, self).save(*args, **kwargs)
+
+
+
+class FilmUser(models.Model):
+
+    STATUS_CHOICES = (
+        (0, "Sin estado"),
+        (1, "Vista"),
+        (2, "Quiero verla"))
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,
+                            on_delete=models.CASCADE)
+    film = models.ForeignKey(Film, on_delete=models.CASCADE)
+
+    # Se podría hacer en tres modelos separados para que sea más eficiente
+    # pero a nivel de desarrollo habría que hacer lo mismo tres veces
+
+    state = models.PositiveSmallIntegerField(
+        choices=STATUS_CHOICES, default=0)  # Al crearse sin estado se borra
+    favorite = models.BooleanField(
+        default=False)
+    note = models.PositiveSmallIntegerField(
+        null=True, validators=[MaxValueValidator(10)])
+    review = models.TextField(null=True)
+
+    class Meta:
+        unique_together = ['film', 'user']
+        ordering = ['film__title']
