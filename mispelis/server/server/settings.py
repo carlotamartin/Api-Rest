@@ -40,13 +40,14 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     #Django external apps
-    'corsheaders'
+    'corsheaders',
     'rest_framework',
     'django_rest_passwordreset',
+    'django_filters',
 
     # Django custom apps
     'authentication',
-    'films'
+    'films',
 ]
 
 # Custom user model
